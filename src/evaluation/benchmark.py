@@ -16,37 +16,77 @@ from src.evaluation.metrics import (
 
 BENCHMARK_TEST_SUITE = [
     {
-        "id": "REQ-001",
-        "title": "Crédito Vehicular con Aval Solidario",
+        "id": "TC-SENSES-001",
+        "title": "Calendario interactivo para agendamiento individual, en bloque y reprogramación de citas",
         "requirement": (
-            "Un cliente con score crediticio C (alrededor de 600 puntos) desea financiar un auto nuevo "
-            "aportando una cuota inicial, pero requiere incluir un aval solidario para que el banco apruebe "
-            "el crédito respetando el porcentaje máximo de endeudamiento."
-        )
+            "Como personal de Admisión, quiero consultar la disponibilidad horaria de los profesionales "
+            "en una matriz interactiva y agendar citas individuales o en bloque recurrente, así como moverlas o "
+            "duplicarlas, para coordinar ágilmente las sesiones de los pacientes (particulares, sociales o por convenio) "
+            "evitando cruces de horario y sustituyendo el uso de hojas compartidas externas."
+        ),
+        "expected_sources": [
+            "senses_catalogo_requisitos_historias.md (HU-0001)",
+            "senses_fuentes_y_actores.md (FUE-0001, ACT-0002)",
+            "senses_reglas_negocio_y_arquitectura.md (RN-CLI-001, Appointment)"
+        ]
     },
     {
-        "id": "REQ-002",
-        "title": "Desbloqueo de Tarjeta por Alerta Antifraude",
+        "id": "TC-SENSES-002",
+        "title": "Registro de ingresos y emisión de comprobante de pago interno",
         "requirement": (
-            "Un cliente cuya tarjeta de crédito fue bloqueada automáticamente tras una transacción con velocidad "
-            "geográfica anómala en el exterior desea desbloquear su tarjeta de inmediato y conocer si puede hacerlo por la app."
-        )
+            "Como personal de Caja o Admisión, quiero registrar los pagos de los pacientes por una o varias citas "
+            "y emitir el comprobante de pago en formato digital, para mantener el control del flujo diario de ingresos "
+            "y entregar un comprobante con el desglose del servicio."
+        ),
+        "expected_sources": [
+            "senses_catalogo_requisitos_historias.md (HU-0002)",
+            "senses_fuentes_y_actores.md (FUE-0002, ACT-0002, ACT-0003)",
+            "senses_reglas_negocio_y_arquitectura.md (RN-FIN-001, PaymentReceipt)"
+        ]
     },
     {
-        "id": "REQ-003",
-        "title": "Ampliación Temporal de Límite Diario para Transferencia",
+        "id": "TC-SENSES-003",
+        "title": "Control y administración del inventario de activos de la clínica",
         "requirement": (
-            "Un cliente requiere realizar una transferencia interbancaria urgente de $10,000 USD hoy mismo, "
-            "pero su límite diario estándar es de $3,000 USD. Desea ampliar el límite desde los canales digitales con seguridad."
-        )
+            "Como personal de Caja y Registro o Administración, quiero registrar, actualizar y dar seguimiento "
+            "a los bienes y equipos de la clínica con su información detallada, estado y fotografía, para mantener un "
+            "inventario físico valorizado, auditable y actualizado de los recursos institucionales."
+        ),
+        "expected_sources": [
+            "senses_catalogo_requisitos_historias.md (HU-0003)",
+            "senses_fuentes_y_actores.md (FUE-0003, ACT-0003)",
+            "senses_reglas_negocio_y_arquitectura.md (RN-PAT-001, Asset)"
+        ]
     },
     {
-        "id": "REQ-004",
-        "title": "Reprogramación de Saldo en Situación de Vulnerabilidad",
+        "id": "TC-SENSES-004",
+        "title": "Consulta gerencial y exportación de datos comerciales y socioeconómicos de pacientes",
         "requirement": (
-            "Un cliente titular de un crédito de consumo personal con 25 días de mora solicita reprogramar el saldo "
-            "de su deuda extendiendo el plazo de pago para evitar que su calificación crediticia caiga a pérdida."
-        )
+            "Como Gerencia, quiero consultar los datos de prospección comercial, canales de captación y "
+            "situación socioeconómica de los pacientes, así como exportar el consolidado institucional, para evaluar el "
+            "rendimiento de las estrategias de captación y tomar decisiones comerciales sin exponer esta información al "
+            "personal de atención clínica."
+        ),
+        "expected_sources": [
+            "senses_catalogo_requisitos_historias.md (HU-0004)",
+            "senses_fuentes_y_actores.md (FUE-0004, ACT-0001, ACT-0004)",
+            "senses_reglas_negocio_y_arquitectura.md (RN-MKT-001, PatientMarketingData)"
+        ]
+    },
+    {
+        "id": "TC-SENSES-005",
+        "title": "Buzón interno de sugerencias, reconocimientos y gestión de planes de mejora",
+        "requirement": (
+            "Como colaborador de la clínica (Psicólogo, Interno, Admisión o Caja), quiero enviar sugerencias, "
+            "observaciones o reconocimientos de forma anónima o identificada, y como Recursos Humanos quiero clasificar los "
+            "casos, gestionar acciones de mejora y emitir reportes mensuales, para impulsar la mejora continua del clima y "
+            "los servicios institucionales con estricta confidencialidad."
+        ),
+        "expected_sources": [
+            "senses_catalogo_requisitos_historias.md (HU-0005)",
+            "senses_fuentes_y_actores.md (FUE-0005, ACT-0006, MAN-RRHH-BUZ-001)",
+            "senses_reglas_negocio_y_arquitectura.md (RN-RRHH-001, SuggestionCase)"
+        ]
     }
 ]
 
@@ -116,6 +156,7 @@ class ExperimentalBenchmarkRunner:
                 rag_hallucinations_count=rag_faith["hallucinations_count"],
                 rag_user_story=rag_output.user_story,
                 rag_scenarios_text=rag_output.gherkin_scenarios,
+                retrieved_sources=[f"{d.source} (score: {d.score:.3f})" for d in rag_output.retrieved_documents],
 
                 # Multiagente
                 multiagent_invest_score=multi_invest["overall_score"],

@@ -107,16 +107,15 @@ def run_benchmark():
 
 
 def run_demo():
-    """Ejecuta una demostración comparativa directa sobre un caso representativo."""
-    sample_req = (
-        "Un cliente con score medio C (alrededor de 600 puntos) desea financiar un auto nuevo "
-        "aportando una cuota inicial, pero requiere incluir un aval solidario para que el banco apruebe "
-        "el crédito respetando el porcentaje máximo de endeudamiento."
-    )
+    """Ejecuta una demostración comparativa directa sobre un caso representativo de Senses."""
+    from src.evaluation.benchmark import BENCHMARK_TEST_SUITE
+    sample_case = BENCHMARK_TEST_SUITE[0]
+    sample_req = sample_case["requirement"]
+
     print("\n" + "=" * 80)
-    print("                    DEMOSTRACIÓN COMPARATIVA EN VIVO")
+    print("      DEMOSTRACIÓN COMPARATIVA EN VIVO: CENTRO PSICOLÓGICO SENSES")
     print("=" * 80)
-    print(f"REQUISITO INFORMAL EVALUADO:\n\"{sample_req}\"\n")
+    print(f"REQUISITO INFORMAL EVALUADO ({sample_case['id']} - {sample_case['title']}):\n\"{sample_req}\"\n")
 
     print(">>> 1. Evaluando con Pipeline RAG Convencional...")
     run_rag(sample_req)
@@ -125,9 +124,8 @@ def run_demo():
     run_multiagent(sample_req)
 
     print("\n>>> 3. Ejecutando Banco de Evaluación Experimental sobre el Caso...")
-    from src.evaluation.benchmark import BENCHMARK_TEST_SUITE
     runner = ExperimentalBenchmarkRunner()
-    report = runner.run_benchmark([BENCHMARK_TEST_SUITE[0]])
+    report = runner.run_benchmark([sample_case])
     print_cli_summary(report)
     export_benchmark_json(report)
     generate_markdown_report(report)

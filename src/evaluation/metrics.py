@@ -32,38 +32,46 @@ def evaluate_invest_rubric(user_story_text: str, gherkin_text: str) -> Dict[str,
     has_isolated_scope = "depende de la historia" not in lower_story and "bloqueado por" not in lower_story
     scores["Independent"] = 9.0 if has_isolated_scope else 5.0
 
-    # 2. Negotiable
+    # 2. Negotiable (fórmula estándar de rol, acción y propósito)
     has_standard_formula = "como" in lower_story and "quiero" in lower_story and "para" in lower_story
     scores["Negotiable"] = 8.5 if has_standard_formula else 5.0
 
-    # 3. Valuable (beneficio explícito)
+    # 3. Valuable (beneficio explícito de negocio vs implementación puramente técnica)
     benefit_match = re.search(r'para\s+([^\.\n]+)', lower_story)
-    if benefit_match and len(benefit_match.group(1).strip()) > 15:
+    has_purely_technical_benefit = bool(re.search(r'(guardar.*base de datos|guardar.*sistema|atenderlo|tomar medidas|no tener que crear)', lower_story))
+    if benefit_match and not has_purely_technical_benefit and len(benefit_match.group(1).strip()) > 25:
         scores["Valuable"] = 9.5
+    elif benefit_match and not has_purely_technical_benefit:
+        scores["Valuable"] = 7.5
     elif benefit_match:
-        scores["Valuable"] = 7.0
+        scores["Valuable"] = 6.0
     else:
-        scores["Valuable"] = 4.0
+        scores["Valuable"] = 3.5
 
-    # 4. Estimable (presencia de reglas o parámetros numéricos en escenarios)
-    has_params = bool(re.search(r'(\$|\%|\d+\s*(meses|años|días|puntos|usd))', lower_gherkin))
-    scores["Estimable"] = 8.5 if has_params else 6.0
+    # 4. Estimable (presencia de reglas, parámetros numéricos o métricas del dominio en escenarios)
+    has_params = bool(re.search(r'(\$|\%|\d+\s*(meses|años|días|sesiones|puntos|usd|soles|horas|semanas)|sug-\d{4}|ruc\s*\d+)', lower_gherkin))
+    scores["Estimable"] = 9.0 if has_params else 6.0
 
-    # 5. Small (no es una épica con más de 8 escenarios ni texto kilométrico)
+    # 5. Small (tamaño acotado, entre 1 y 5 escenarios)
     scenarios_count = len(re.findall(r'Scenario:', gherkin_text, re.IGNORECASE))
-    if 1 <= scenarios_count <= 4:
+    if 2 <= scenarios_count <= 4:
         scores["Small"] = 9.0
+    elif scenarios_count == 1:
+        scores["Small"] = 7.5
     elif scenarios_count > 6:
         scores["Small"] = 5.5
     else:
         scores["Small"] = 7.0
 
-    # 6. Testable (calidad de los pasos Given-When-Then)
+    # 6. Testable (calidad Given-When-Then y cobertura de casos negativos/rechazo BDD)
     is_valid, errors, sc_found = lint_gherkin_text(gherkin_text)
-    if is_valid and sc_found >= 2:
+    has_negative_case = bool(re.search(r'(rechaz|bloque|error|alerta|fall|denieg|incomplet|conflicto|expir)', lower_gherkin))
+    if is_valid and sc_found >= 2 and has_negative_case:
         scores["Testable"] = 9.5
+    elif is_valid and sc_found >= 2:
+        scores["Testable"] = 7.0
     elif is_valid:
-        scores["Testable"] = 8.0
+        scores["Testable"] = 6.0
     elif sc_found > 0:
         scores["Testable"] = 5.0
     else:
@@ -86,8 +94,9 @@ def evaluate_domain_faithfulness(generated_text: str, domain_docs: List[DomainDo
 
     combined_domain_text = " ".join([d.content for d in domain_docs]).lower()
     
-    # Extraer menciones de códigos normativos (ej. RN-ADM-002, SEC-MFA-001)
-    cited_rules = re.findall(r'(?:RN-[A-Z]+-\d{3}|SEC-[A-Z]+-\d{3})', generated_text)
+    # Extraer menciones de códigos normativos (ej. HU-0001, EDU-0002, FUE-0001, ACT-0002, RN-CLI-001, RN-ADM-002)
+    rule_pattern = r'(?:HU-\d{4}|EDU-\d{4}|FUE-\d{4}|ACT-\d{4}|RN-[A-Z]+-\d{3}|SEC-[A-Z]+-\d{3}|MAN-[A-Z]+-[A-Z]+-\d{3}|SUG-\d{4}-\d{3})'
+    cited_rules = re.findall(rule_pattern, generated_text, re.IGNORECASE)
     
     grounded_rules = []
     ungrounded_rules = []
@@ -98,8 +107,8 @@ def evaluate_domain_faithfulness(generated_text: str, domain_docs: List[DomainDo
         else:
             ungrounded_rules.append(rule)
 
-    # Buscar menciones de porcentajes o cifras críticas (ej. 40%, 20%, 35%, 2 horas)
-    ciphers = re.findall(r'(\d+%(?:\s+de\s+cuota)?|\d+\s*(?:horas|meses|usd))', generated_text, re.IGNORECASE)
+    # Buscar menciones de porcentajes o cifras críticas (ej. 18%, 40%, 7 días, 6 a 8 sesiones, 24 horas, 2 horas)
+    ciphers = re.findall(r'(\d+%|\d+\s*(?:horas|meses|días|sesiones|usd|soles|puntos))', generated_text, re.IGNORECASE)
     grounded_ciphers = []
     ungrounded_ciphers = []
     for c in ciphers:
@@ -110,15 +119,14 @@ def evaluate_domain_faithfulness(generated_text: str, domain_docs: List[DomainDo
 
     total_checks = len(cited_rules) + len(ciphers)
     if total_checks == 0:
-        # Si la respuesta es genérica y no cita reglas normativas ni cifras del dominio,
-        # su fidelidad y especificidad respecto al dominio bancario es baja.
+        # Si la respuesta es genérica y no cita reglas normativas ni cifras del dominio
         score = 0.40
     else:
         supported = len(grounded_rules) + len(grounded_ciphers)
         # Ratio de afirmaciones respaldadas
         precision = supported / total_checks
         # Cobertura de reglas normativas presentes en el contexto recuperado
-        available_rules = set(re.findall(r'(?:RN-[A-Z]+-\d{3}|SEC-[A-Z]+-\d{3})', combined_domain_text, re.IGNORECASE))
+        available_rules = set(re.findall(rule_pattern, combined_domain_text, re.IGNORECASE))
         rule_coverage = min(1.0, len(grounded_rules) / max(1, len(available_rules))) if available_rules else 1.0
         # Ponderación: 70% precisión libre de alucinaciones + 30% cobertura de reglas
         score = round((0.70 * precision) + (0.30 * rule_coverage), 2)

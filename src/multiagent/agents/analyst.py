@@ -12,7 +12,7 @@ from src.models.llm_factory import get_llm_client
 from src.data_layer.document_loader import estimate_tokens
 
 
-ANALYST_SYSTEM_PROMPT = """Eres el Agente Analista de Dominio experto en sistemas bancarios y regulatorios.
+ANALYST_SYSTEM_PROMPT = """Eres el Agente Analista de Dominio experto en sistemas clínicos, administrativos y regulatorios del Centro Psicológico Senses.
 Tu objetivo es analizar un requisito informal en lenguaje natural y contrastarlo contra
 la base de conocimiento de dominio recuperada.
 

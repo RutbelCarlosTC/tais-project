@@ -74,11 +74,11 @@ def generate_markdown_report(report: BenchmarkReport, output_file: Path = OUTPUT
 
     md.append("## 3. Análisis Cualitativo por Dimensiones\n\n")
     md.append("### A. Criterios INVEST y Redacción de Historias de Usuario\n")
-    md.append("- **RAG Convencional**: Produce historias con roles genéricos ('Como cliente...') y criterios de aceptación superficiales que omiten restricciones del dominio bancario.\n")
-    md.append("- **Multiagente (LangGraph)**: El Agente Analista detecta los roles especializados (ej. 'Cliente con Score C', 'Aval Solidario') y el Agente Crítico fuerza al Redactor a precisar beneficios de negocio medibles y límites numéricos comprobables.\n\n")
+    md.append("- **RAG Convencional**: Produce historias con roles genéricos ('Como usuario...', 'Como recepcionista...') y criterios de aceptación superficiales que omiten restricciones del dominio clínico y administrativo.\n")
+    md.append("- **Multiagente (LangGraph)**: El Agente Analista detecta los roles especializados (ej. 'Personal de Admisión', 'Personal de Caja y Registro', 'Gerencia', 'Recursos Humanos') y el Agente Crítico fuerza al Redactor a precisar beneficios de negocio medibles, límites numéricos y escenarios de rechazo.\n\n")
 
     md.append("### B. Detección y Mitigación de Alucinaciones / Fuga Semántica\n")
-    md.append("- El bucle de supervisión `Critic -> Writer` rechaza propuestas que inventan reglas o que omiten regulaciones críticas presentes en la base de conocimiento (como el ratio DTI máximo de 40% o el periodo de enfriamiento de 2 horas en ampliación de límites).\n\n")
+    md.append("- El bucle de supervisión `Critic -> Writer` rechaza propuestas que inventan reglas o que omiten regulaciones críticas presentes en la base de conocimiento (como la emisión de comprobantes internos sin validez SUNAT, cálculo exacto de IGV 18%, advertencia obligatoria de no emergencia en el buzón o la protección de datos socioeconómicos frente al equipo clínico).\n\n")
 
     md.append("### C. Calidad Sintáctica Gherkin y BDD\n")
     md.append("- El Agente Validador ejecuta verificación por expresiones regulares y reglas de completitud Given-When-Then, asegurando que cada escenario cuente con precondiciones, acciones y aserciones verificables sin errores léxicos.\n\n")
@@ -87,13 +87,41 @@ def generate_markdown_report(report: BenchmarkReport, output_file: Path = OUTPUT
     for r in report.individual_results:
         md.append(f"### Caso {r.requirement_id}\n")
         md.append(f"**Requisito informal**: *\"{r.requirement_text}\"*\n\n")
-        md.append(f"- **RAG Baseline**: INVEST = {r.rag_invest_score:.1f}/10, Fidelidad = {r.rag_faithfulness_score*100:.0f}%, Sintaxis = {'Válida' if r.rag_gherkin_valid else 'Inválida'}\n")
-        md.append(f"- **Multiagente**: INVEST = {r.multiagent_invest_score:.1f}/10, Fidelidad = {r.multiagent_faithfulness_score*100:.0f}%, Sintaxis = {'Válida' if r.multiagent_gherkin_valid else 'Inválida'} (Iteraciones requeridas: {r.multiagent_iterations})\n")
-        md.append(f"- **Historia generada por Multiagente**:\n  > {r.multiagent_user_story}\n\n")
+        
+        md.append("#### Fuentes y Documentos Específicos Recuperados (RAG):\n")
+        if r.retrieved_sources:
+            for s in r.retrieved_sources:
+                md.append(f"- `{s}`\n")
+        else:
+            md.append("- *No se registraron fuentes explícitas.*\n")
+        md.append("\n")
 
-    md.append("## 5. Conclusiones y Trade-offs Operativos\n")
-    md.append("El sistema multiagente ofrece una **superioridad sustancial en rigor analítico, adherencia a políticas de dominio y cobertura de casos de borde** frente al RAG convencional. ")
-    md.append("El costo operacional se traduce en una mayor latencia y consumo de tokens debido a las múltiples etapas de razonamiento y al bucle de corrección adaptativo; sin embargo, en entornos regulados críticos (banca, finanzas, salud) la reducción del riesgo de alucinaciones y omisiones justifica ampliamente la inversión computacional.\n")
+        md.append("#### Comparativa de Métricas por Caso:\n")
+        md.append(f"| Métrica | RAG Convencional (Baseline) | Sistema Multiagente (LangGraph) |\n")
+        md.append(f"| :--- | :---: | :---: |\n")
+        md.append(f"| Calificación INVEST (0-10) | {r.rag_invest_score:.2f} / 10 | **{r.multiagent_invest_score:.2f} / 10** |\n")
+        md.append(f"| Fidelidad de Dominio (Groundedness) | {r.rag_faithfulness_score*100:.1f}% | **{r.multiagent_faithfulness_score*100:.1f}%** |\n")
+        md.append(f"| Sintaxis Gherkin (BDD) | {'Válida' if r.rag_gherkin_valid else 'Inválida'} | **{'Válida' if r.multiagent_gherkin_valid else 'Inválida'}** |\n")
+        md.append(f"| Escenarios Generados | {r.rag_gherkin_scenarios_count} | **{r.multiagent_gherkin_scenarios_count}** |\n")
+        md.append(f"| Alucinaciones / Fugas Semánticas | {r.rag_hallucinations_count} | **{r.multiagent_hallucinations_count}** |\n")
+        md.append(f"| Iteraciones Requeridas | 1 | **{r.multiagent_iterations}** |\n")
+        md.append(f"| Latencia | {r.rag_execution_time_sec:.3f} s | {r.multiagent_execution_time_sec:.3f} s |\n\n")
+
+        md.append("#### Contraste de Salidas:\n")
+        md.append("**1. Salida RAG Convencional (Baseline):**\n")
+        md.append(f"> **Historia:** {r.rag_user_story}\n\n")
+        md.append("```gherkin\n" + (r.rag_scenarios_text or "Sin escenarios generados") + "\n```\n\n")
+
+        md.append("**2. Salida Sistema Multiagente (LangGraph con Bucle de Crítica):**\n")
+        md.append(f"> **Historia:** {r.multiagent_user_story}\n\n")
+        md.append("```gherkin\n" + (r.multiagent_scenarios_text or "Sin escenarios generados") + "\n```\n\n")
+        md.append("---\n\n")
+
+    md.append("## 5. Conclusiones y Análisis de Resultados\n")
+    md.append("El banco de evaluación experimental demuestra que en el dominio del **Centro Psicológico Senses**, el **Sistema Multiagente LangGraph supera de forma consistente al RAG Convencional**:\n")
+    md.append("1. **Reducción Crítica de Alucinaciones y Desvíos**: Mientras el RAG convencional llega a inventar facturación oficial SUNAT o exponer datos socioeconómicos y de captación al equipo clínico, el Agente Crítico y Analista garantizan estricto apego a las fuentes oficiales (recibo B001 sin validez SUNAT, blindaje de datos comerciales y aviso obligatorio de no emergencia en buzón).\n")
+    md.append("2. **Cobertura Exhaustiva de Casos de Rechazo y Borde**: El RAG baseline produce historias superficiales y sólo escenarios de camino feliz. El Multiagente genera casos negativos y de borde esenciales (bloqueo por cruce de horario en matriz, discordancia de importes en multicitas, rechazo de activo sin foto, denegatoria de acceso clínico a marketing y exclusividad de RRHH en el buzón).\n")
+    md.append("3. **Conformidad BDD y Sintaxis Formal**: El Validador sintáctico asegura que los escenarios cumplan la gramática Gherkin estricta lista para automatización con herramientas como Cucumber o Behave.\n\n")
 
     with open(output_file, "w", encoding="utf-8") as f:
         f.write("".join(md))

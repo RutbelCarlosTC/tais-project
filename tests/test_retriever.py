@@ -20,7 +20,7 @@ def test_knowledge_base_loading_and_chunking():
 
 
 def test_query_domain_knowledge_returns_top_k():
-    query = "crédito vehicular aval garantía score"
+    query = "calendario interactivo agendamiento matriz citas"
     results = query_domain_knowledge(query, top_k=TOP_K_RETRIEVAL)
 
     assert len(results) <= TOP_K_RETRIEVAL
@@ -34,8 +34,8 @@ def test_query_domain_knowledge_returns_top_k():
 
 
 def test_query_domain_knowledge_relevance():
-    query = "periodo de enfriamiento cooling-off transferencias"
+    query = "buzón de sugerencias anonimato código QR Recursos Humanos"
     results = query_domain_knowledge(query, top_k=3)
     
     combined = " ".join([r.content.lower() for r in results])
-    assert "enfriamiento" in combined or "cooling" in combined or "transferencia" in combined
+    assert "buzón" in combined or "sugerencias" in combined or "rrhh" in combined or "recursos humanos" in combined

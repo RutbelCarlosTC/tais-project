@@ -141,6 +141,7 @@ class BenchmarkItemResult(BaseModel):
     rag_hallucinations_count: int
     rag_user_story: str
     rag_scenarios_text: str
+    retrieved_sources: List[str] = Field(default_factory=list, description="Fuentes y chunks específicos recuperados de la base de conocimiento para el RAG")
 
     # Sistema Multiagente LangGraph
     multiagent_invest_score: float

@@ -1,0 +1,57 @@
+# ==============================================================================
+# Git Ignore - Sistema Multiagente LangGraph vs RAG Convencional
+# ==============================================================================
+
+# Entornos virtuales de Python
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Variables de entorno y secretos (mantener .env.example como plantilla)
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Bytecode y cachés de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribuciones y empaquetado
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Pruebas y cobertura
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.hypothesis/
+
+# Bases de datos vectoriales y almacenes locales generados
+data/vector_store/*.json
+data/vector_store/*.bin
+data/vector_store/*.pkl
+data/vector_store/chroma/
+
+# Configuración de editores e IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+Desktop.ini
