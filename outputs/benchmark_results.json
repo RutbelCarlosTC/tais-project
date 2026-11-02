@@ -1,0 +1,39 @@
+{
+  "total_cases_evaluated": 1,
+  "average_rag_invest": 9.0,
+  "average_multiagent_invest": 9.0,
+  "average_rag_faithfulness": 0.7,
+  "average_multiagent_faithfulness": 0.69,
+  "rag_syntax_validity_percentage": 100.0,
+  "multiagent_syntax_validity_percentage": 100.0,
+  "average_rag_latency_sec": 0.0,
+  "average_multiagent_latency_sec": 0.008,
+  "average_multiagent_iterations": 1.0,
+  "individual_results": [
+    {
+      "requirement_id": "REQ-001",
+      "requirement_text": "Un cliente con score crediticio C (alrededor de 600 puntos) desea financiar un auto nuevo aportando una cuota inicial, pero requiere incluir un aval solidario para que el banco apruebe el crédito respetando el porcentaje máximo de endeudamiento.",
+      "rag_invest_score": 9.0,
+      "rag_faithfulness_score": 0.7,
+      "rag_gherkin_valid": true,
+      "rag_gherkin_scenarios_count": 2,
+      "rag_execution_time_sec": 0.0,
+      "rag_iterations": 1,
+      "rag_tokens_estimated": 2198,
+      "rag_hallucinations_count": 0,
+      "rag_user_story": "Como cliente bancario, quiero solicitar un crédito vehicular para poder comprar un auto.\n\nCRITERIOS DE ACEPTACIÓN (Gherkin):",
+      "rag_scenarios_text": "Feature: Solicitud de Crédito\n\nScenario: Solicitud exitosa\n  Given que el cliente tiene 25 años y score A\n  When solicita un crédito por $20,000 USD\n  Then el sistema aprueba la solicitud\n\nScenario: Rechazo por score\n  Given que el cliente tiene score D\n  When ingresa su solicitud\n  Then la solicitud es rechazada",
+      "multiagent_invest_score": 9.0,
+      "multiagent_faithfulness_score": 0.69,
+      "multiagent_gherkin_valid": true,
+      "multiagent_gherkin_scenarios_count": 3,
+      "multiagent_execution_time_sec": 0.008,
+      "multiagent_iterations": 1,
+      "multiagent_tokens_estimated": 7158,
+      "multiagent_hallucinations_count": 1,
+      "multiagent_user_story": "Como Cliente con Score C (500-649), quiero solicitar un crédito vehicular incorporando un aval solidario y la póliza endosada, para obtener la aprobación financiera garantizando el cumplimiento de DTI y cobertura de riesgo.",
+      "multiagent_scenarios_text": "Feature: Originación de Crédito Vehicular\n  Validación rigurosa de score, avales, DTI y desembolso seguro.\n\n  # Como Cliente con Score C (500-649), quiero solicitar un crédito vehicular incorporando un aval solidario y la póliza endosada, para obtener la aprobación financiera garantizando el cumplimiento de DTI y cobertura de riesgo.\n\n  Scenario: Aprobación condicionada con aval solidario y DTI dentro del 40%\n    Given que el solicitante posee un score crediticio de 620 puntos (Score C)\n    And su relación DTI consolidada no excede el 40%\n    And aporta una cuota inicial del 20% comercial del vehículo\n    And presenta un Aval Solidario con score de 750 puntos y DTI menor al 30%\n    When el sistema de riesgos procesa la solicitud vehicular\n    Then la solicitud queda aprobada condicionada a la firma digital del pagaré\n    And se exige la póliza de seguro vehicular endosada a favor de la entidad (RN-GAR-002)\n\n  Scenario: Rechazo por exceso de capacidad de endeudamiento DTI\n    Given que el solicitante presenta una cuota que representa el 46% de su ingreso neto\n    When se calcula la capacidad de endeudamiento según RN-ADM-002\n    Then el sistema rechaza la solicitud por superar el DTI máximo del 40%\n    And emite el informe de denegatoria de riesgo crediticio\n\n  Scenario: Validación de desembolso directo a concesionaria autorizada\n    Given que el crédito vehicular fue aprobado con pagaré firmado y garantía inscrita\n    When se ejecuta la orden de desembolso según RN-DES-002\n    Then el monto se transfiere directamente a la cuenta corporativa del concesionario\n    And no se abona directamente a la cuenta personal del cliente",
+      "multiagent_validation_status": "APPROVED"
+    }
+  ]
+}
