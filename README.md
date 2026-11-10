@@ -206,15 +206,16 @@ OLLAMA_MODEL=llama3:8b
 
 ## 6. Resultados Experimentales (Benchmark Senses)
 
-Evaluación comparativa ejecutada sobre los 5 requerimientos nucleares del **Centro Psicológico Senses** (`HU-0001` a `HU-0005`):
+Evaluación comparativa ejecutada sobre los 5 requerimientos nucleares del **Centro Psicológico Senses** (`HU-0001` a `HU-0005`) utilizando el modelo **`nvidia/nemotron-3.5-super-vl-120b-a12b`** a través de **NVIDIA NIM** (temperatura = 0.0).
 
 | Métrica Evaluada | RAG Convencional (Baseline) | Sistema Multiagente (LangGraph) | Diferencial (Δ) |
 | :--- | :---: | :---: | :---: |
-| **Calidad INVEST Promedio (0 - 10)** | 8.03 | **9.08** | **+1.05 pts** |
-| **Fidelidad de Dominio (Groundedness)** | 40.0% | **64.0%** | **+24.0%** |
-| **Validez Sintáctica Gherkin (BDD)** | 100.0% | **100.0%** | +0.0% |
-| **Escenarios BDD Promedio por Caso** | 2.0 | **4.0** | **+2.0 escenarios** |
-| **Latencia Promedio por Requisito** | ~0.004 s | ~0.008 s | +0.004 s |
+| **Calidad INVEST Promedio (0 - 10)** | 7.61 | **7.65** | **+0.04 pts** |
+| **Fidelidad de Dominio (Groundedness)** | **79.0%** | 72.0% | **–7.0%** |
+| **Validez Sintáctica Gherkin (BDD)** | 20.0% | **40.0%** | **+20.0%** |
+| **Escenarios BDD Promedio por Caso** | 5.0 | **7.2** | **+2.2 escenarios** |
+| **Iteraciones Promedio (Crítico)** | 1.0 | **2.6** | **+1.6 iter** |
+| **Latencia Promedio por Requisito** | **32.890 s** | 551.249 s | +518.359 s |
 
-> **Conclusión Clave**: El sistema multiagente supera de forma sistemática al RAG convencional al incorporar roles analíticos especializados y un bucle de crítica adaptativo que enriquece la cobertura de escenarios de excepción (conflictos de horario, exoneración de penalidades, validación de comprobantes internos y buzón con advertencia de no emergencia). Los reportes detallados se guardan automáticamente en `outputs/comparative_evaluation_report.md` y `outputs/benchmark_results.json`.
+> **Conclusión Clave**: El sistema multiagente mejora ligeramente la calidad INVEST (+0.04 pts) y duplica la validez sintáctica Gherkin (de 20.0% a 40.0%), pero reduce la fidelidad al dominio (–7.0%) y incrementa significativamente la latencia y el consumo de tokens debido al bucle de crítica iterativo. Los resultados reflejan valores medidos con el modelo Nemotron real, no datos simulados. Los reportes detallados se guardan automáticamente en `outputs/comparative_evaluation_report.md` y `outputs/benchmark_results.json`.
 

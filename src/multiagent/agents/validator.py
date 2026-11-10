@@ -16,7 +16,9 @@ def lint_gherkin_text(raw_text: str) -> Tuple[bool, List[GherkinLintError], int]
     """
     Linter sintáctico para especificaciones BDD en formato Gherkin.
     Valida presencia de Feature, Scenarios, estructura secuencial Given-When-Then,
-    y detecta pasos vacíos o mal formados.
+    y detecta pasos vacíos o mal formados. Tolera artefactos de markdown
+    (bloques ```gherkin, comentarios /* */, prefijos > y encabezados) que
+    los modelos de lenguaje suelen incluir en sus respuestas.
     """
     errors: List[GherkinLintError] = []
     lines = raw_text.splitlines()
@@ -31,10 +33,19 @@ def lint_gherkin_text(raw_text: str) -> Tuple[bool, List[GherkinLintError], int]
     gherkin_step_pattern = re.compile(r'^\s*(Given|When|Then|And|But|Dado|Cuando|Entonces|Y|Pero)\s+(.+)$', re.IGNORECASE)
     scenario_pattern = re.compile(r'^\s*(Scenario|Escenario|Scenario Outline|Esquema del escenario):\s*(.+)$', re.IGNORECASE)
     feature_pattern = re.compile(r'^\s*(Feature|Característica|Funcionalidad):\s*(.+)$', re.IGNORECASE)
+    fence_pattern = re.compile(r'^```|^~~~')
+    comment_pattern = re.compile(r'^\s*\*|/\*|\*/')
 
     for line_idx, raw_line in enumerate(lines, start=1):
         line = raw_line.strip()
+        if line.startswith('>'):
+            line = line[1:].strip()
+
         if not line or line.startswith('#') or line.startswith('@'):
+            continue
+        if fence_pattern.match(line):
+            continue
+        if comment_pattern.match(line):
             continue
 
         feat_m = feature_pattern.match(line)
